@@ -1,0 +1,22 @@
+{
+    "name": "ki5an/tailwind-colors",
+    "description": "A simple way to create color palettes.",
+    "keywords": [
+        "tailwind",
+        "tailwindcss",
+        "colors",
+        "color-palette",
+        "color-generator"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ki5an\\TailwindColors\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
