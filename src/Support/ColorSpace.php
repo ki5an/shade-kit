@@ -167,6 +167,143 @@ final class ColorSpace
         ];
     }
 
+    /**
+     * Convert an OKLCH color to the closest displayable sRGB color.
+     */
+    public static function fromOklch(
+        float $lightness,
+        float $chroma,
+        float $hue,
+    ): Color {
+        $fittedChroma = self::fitChroma(
+            $lightness,
+            $chroma,
+            $hue,
+        );
+
+        $linearRgb = self::oklchToLinearRgb(
+            $lightness,
+            $fittedChroma,
+            $hue,
+        );
+
+        return Color::fromRgb(
+            self::toEightBitChannel($linearRgb['red']),
+            self::toEightBitChannel($linearRgb['green']),
+            self::toEightBitChannel($linearRgb['blue']),
+        );
+    }
+
+    private static function fitChroma(
+        float $lightness,
+        float $chroma,
+        float $hue,
+    ): float {
+        if (self::isInSrgbGamut($lightness, $chroma, $hue)) {
+            return $chroma;
+        }
+
+        $minimumChroma = 0.0;
+        $maximumChroma = $chroma;
+
+        for ($iteration = 0; $iteration < 20; $iteration++) {
+            $candidateChroma = ($minimumChroma + $maximumChroma) / 2;
+
+            if (self::isInSrgbGamut($lightness, $candidateChroma, $hue)) {
+                $minimumChroma = $candidateChroma;
+
+                continue;
+            }
+
+            $maximumChroma = $candidateChroma;
+        }
+
+        return $minimumChroma;
+    }
+
+    private static function isInSrgbGamut(
+        float $lightness,
+        float $chroma,
+        float $hue,
+    ): bool {
+        $linearRgb = self::oklchToLinearRgb($lightness, $chroma, $hue);
+
+        return self::isNormalized($linearRgb['red'])
+            && self::isNormalized($linearRgb['green'])
+            && self::isNormalized($linearRgb['blue']);
+    }
+
+    /**
+     * @return array{red: float, green: float, blue: float}
+     */
+    private static function oklchToLinearRgb(
+        float $lightness,
+        float $chroma,
+        float $hue,
+    ): array {
+        $hueInRadians = deg2rad($hue);
+        $opponentA = $chroma * cos($hueInRadians);
+        $opponentB = $chroma * sin($hueInRadians);
+
+        $long = $lightness
+            + (0.3963377774 * $opponentA)
+            + (0.2158037573 * $opponentB);
+
+        $medium = $lightness
+            - (0.1055613458 * $opponentA)
+            - (0.0638541728 * $opponentB);
+
+        $short = $lightness
+            - (0.0894841775 * $opponentA)
+            - (1.2914855480 * $opponentB);
+
+        $long **= 3;
+        $medium **= 3;
+        $short **= 3;
+
+        return [
+            'red' => (
+                4.0767416621 * $long
+                - 3.3077115913 * $medium
+                + 0.2309699292 * $short
+            ),
+            'green' => (
+                -1.2684380046 * $long
+                + 2.6097574011 * $medium
+                - 0.3413193965 * $short
+            ),
+            'blue' => (
+                -0.0041960863 * $long
+                - 0.7034186147 * $medium
+                + 1.7076147010 * $short
+            ),
+        ];
+    }
+
+    private static function isNormalized(float $value): bool
+    {
+        return $value >= 0.0 && $value <= 1.0;
+    }
+
+    private static function toEightBitChannel(float $linearValue): int
+    {
+        return (int) round(
+            self::clamp(self::delinearize($linearValue)) * 255,
+        );
+    }
+
+    private static function delinearize(float $value): float
+    {
+        return $value <= 0.0031308
+            ? 12.92 * $value
+            : 1.055 * ($value ** (1 / 2.4)) - 0.055;
+    }
+
+    private static function clamp(float $value): float
+    {
+        return max(0.0, min(1.0, $value));
+    }
+
     private static function linearize(float $value): float
     {
         return $value <= 0.04045

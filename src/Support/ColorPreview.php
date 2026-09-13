@@ -69,29 +69,16 @@ final class ColorPreview
 
     private static function block(string $hex): string
     {
+        $channels = Color::fromHex($hex)->rgb();
+
         return "\033[48;2;"
-            .self::red($hex)
+            .$channels['red']
             .';'
-            .self::green($hex)
+            .$channels['green']
             .';'
-            .self::blue($hex)
+            .$channels['blue']
             .'m'
             .'        '
             ."\033[0m";
-    }
-
-    private static function red(string $hex): int
-    {
-        return hexdec(substr($hex, 1, 2));
-    }
-
-    private static function green(string $hex): int
-    {
-        return hexdec(substr($hex, 3, 2));
-    }
-
-    private static function blue(string $hex): int
-    {
-        return hexdec(substr($hex, 5, 2));
     }
 }

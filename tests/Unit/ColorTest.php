@@ -261,6 +261,21 @@ final class ColorTest extends TestCase
         );
     }
 
+    public function test_it_generates_consistent_shades_from_oklch_values(): void
+    {
+        $palette = Color::from('#3B82F6')->palette();
+
+        $this->assertSame(
+            '#77abff',
+            $palette->get(400),
+        );
+
+        $this->assertSame(
+            '#003d97',
+            $palette->get(800),
+        );
+    }
+
     public function test_it_checks_if_shade_exists(): void
     {
         $palette = Color::from('#999999')->palette();
