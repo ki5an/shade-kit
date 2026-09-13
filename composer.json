@@ -1,9 +1,9 @@
 {
-    "name": "ki5an/tailwind-colors",
-    "description": "A simple way to create color palettes.",
+    "name": "ki5an/tailwind-shades",
+    "description": "A PHP color library for creating Tailwind-style color palettes from a single HEX color.",
     "keywords": [
-        "tailwind",
-        "tailwindcss",
+        "tailwind-colors",
+        "shades",
         "colors",
         "color-palette",
         "color-generator"
@@ -14,9 +14,21 @@
     },
     "autoload": {
         "psr-4": {
-            "Ki5an\\TailwindColors\\": "src/"
+            "Ki5an\\TailwindShades\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Ki5an\\TailwindShades\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "build": "php bin/build.php"
+    },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^13.3"
+    }
 }
